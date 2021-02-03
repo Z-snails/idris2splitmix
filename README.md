@@ -1,2 +1,2 @@
 # idris2splitmix
-Splitmix implementation in Idris (2)
+Splitmix implementation in Idris

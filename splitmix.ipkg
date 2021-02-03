@@ -1,0 +1,7 @@
+package splitmix
+
+sourcedir = "src"
+
+depends = contrib
+
+modules = System.Random.SplitMix32

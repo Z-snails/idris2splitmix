@@ -102,7 +102,12 @@ nextBits64 gen0 =
 ||| Return the next Int and the updated SMGen
 export
 nextInt : SMGen -> (Int, SMGen)
-nextInt = mapFst cast . nextBits64
+nextInt gen =
+    let (bits64, gen') = nextBits64 gen
+    in (if bits64 >= 0x7fffffffffffffff
+        then negate $ cast $ bits64 + 0x7fffffffffffffff
+        else cast bits64
+        , gen')
 
 {-
 =========

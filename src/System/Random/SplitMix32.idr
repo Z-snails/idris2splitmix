@@ -176,7 +176,7 @@ theSMGen = unsafePerformIO $ do
 
 ||| Randomly create an SMGen
 export
-newSMGen : IO SMGen
+newSMGen : HasIO io => io SMGen
 newSMGen = do
     (newThe, new) <- splitSMGen <$> readIORef theSMGen
     writeIORef theSMGen newThe

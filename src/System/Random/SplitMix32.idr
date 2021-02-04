@@ -21,6 +21,14 @@ Helper Functions
 ================
 -}
 
+succBits32 : Bits32 -> Bits32
+succBits32 x = if x == 0xffffffff
+    then x
+    else x + 1
+
+neg : Bits32 -> Bits32
+neg x = cast $ the Int 0x100000000 - cast x
+
 xor : Bits32 -> Bits32 -> Bits32
 xor = prim__xor_Bits32
 
@@ -90,6 +98,27 @@ nextBits32 (MkGen seed gamma) = (mix32 seed', MkGen seed' gamma)
   where
     seed' : Bits32
     seed' = seed + gamma
+
+||| Return the next Bits32 in range (lo, hi) inclusive and the updated SMGen
+export
+nextBits32Range : (Bits32, Bits32) -> SMGen -> (Bits32, SMGen)
+nextBits32Range (lo, hi) = mapFst (+ lo) . nextBits32R (succBits32 $ cast $ the Int (cast hi - cast lo))
+  where
+    nextBits32R : Bits32 -> SMGen -> (Bits32, SMGen)
+    nextBits32R 0 gen0 = (0, snd (nextBits32 gen0))
+    nextBits32R range gen0 =
+        let t = assert_total prim__mod_Bits32 (neg range) range
+            go : Bits64 -> SMGen -> (Bits32, SMGen)
+            go m gen = if (the Bits32 $ cast m) < t
+                then (the Bits32 $ cast $ m `prim__shr_Bits64` 32, gen)
+                else
+                    let (x, gen') = nextBits32 gen
+                        m' = the Bits64 $ cast x * cast range
+                    in go m' gen'
+            xgen : (Bits32, SMGen)
+            xgen = nextBits32 gen0
+        in go (cast $ fst xgen) (snd xgen)
+
 
 ||| Return the next Bits64 and the updated SMGen
 export
